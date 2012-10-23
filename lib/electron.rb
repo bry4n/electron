@@ -10,15 +10,25 @@ class Electron#ics
 
   attr_reader :port
   attr_accessor :debug
-  def initialize(port = nil, options = {})
-    @port   = port || _scan_for_port
-    Thread.current[:serial] = SerialPort.new @port, (options[:baud_rate] || 115200)
+  def initialize(options = {})
+    @debug      = options[:debug] || false
+    @port       = options[:port] || _scan_for_port
+    @baud_rate  = options[:baud_rate] || 115200
+    @data_bits  = options[:data_bits] || 8
+    @stop_bits  = options[:stop_bits] || 1
+    @parity     = options[:party]     || SerialPort::NONE
+    connect
+  end
+
+  def connect
+    puts "connecting to #{@port}" if debug
+    @board = SerialPort.new @port, @baud_rate, @data_bits, @stop_bits, @parity
   end
 
   def helpers(&block)
     self.instance_eval(&block)
   end
-  
+
   def loop(&block)
     while(true) do
       block.call
@@ -27,12 +37,11 @@ class Electron#ics
   end
 
   def read
-    Thread.current[:serial].gets
+    @board.gets
   end
 
   def close
-    Thread.current[:serial].close
-    Thread.current[:serial] = nil
+    @board.close
   end
 
   def pin_mode(pin, value)
@@ -62,8 +71,16 @@ class Electron#ics
   end
 
   private
+
   def _write(*args)
-    Thread.current[:serial].write "!#{args.join(" ")}."
+    puts "#{@port}: !#{args.join(" ")}." if debug
+    begin
+      @board.write "!#{args.join(" ")}."
+    rescue Errno::ENXIO => e
+      sleep 1
+      connect
+      @board.write "!#{args.join(" ")}."
+    end
   end
 
   def _scan_for_port
@@ -72,3 +89,6 @@ class Electron#ics
   end
 end
 
+require 'electron/base'
+require 'electron/led'
+require 'electron/button'
