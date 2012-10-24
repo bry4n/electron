@@ -1,5 +1,4 @@
 require 'serialport'
-require 'thread'
 
 class Electron#ics
 
@@ -59,10 +58,6 @@ class Electron#ics
   def digital_read(pin)
     _write("dr", pin)
     read.to_i
-  end
-
-  def analog_write(pin, value)
-    _write("ar", pin, value)
   end
 
   def analog_read(pin)
