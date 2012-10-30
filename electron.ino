@@ -27,9 +27,11 @@ void processCommand() {
   index = 0;
   char command[3], pin[3], value[3];
   if (sscanf(buffer,"%s %s %s", command, pin, value) >= 2) {    
-    if (_match(command, "dw")) digital_write(pin, value);
-    if (_match(command, "aw")) analog_write(pin, value);
-    if (_match(command, "pm")) pin_mode(pin, value);
+    if (_match(command, "dw"))  digital_write(pin, value);
+    if (_match(command, "aw"))  analog_write(pin, value);
+    if (_match(command, "pm"))  pin_mode(pin, value);
+    if (_match(command, "dr"))  digital_read(pin);
+    if (_match(command, "ar"))  analog_read(pin)
   }
   memset(buffer, 0, sizeof(buffer));
 }
